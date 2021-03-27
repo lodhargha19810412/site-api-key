@@ -12,8 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 /**
  * Json controller.
  */
-class json extends ControllerBase
-{
+class json extends ControllerBase {
 
     /**
      * Keyvalue factory service.
