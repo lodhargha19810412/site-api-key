@@ -1,0 +1,8 @@
+name: Site Api Key
+type: module
+description: "This module needs to alter the existing Drupal Site Information form"
+package: Site Api Key
+dependencies:
+  - drupal:serialization
+version: VERSION
+core_version_requirement: ^8 || ^9

@@ -1,0 +1,6 @@
+page.json:
+  path: "/page/json"
+  defaults:
+    _controller: '\Drupal\site_api_key\Controller\json::json'
+  requirements:
+    _custom_access: '\Drupal\site_api_key\Controller\json::access'

@@ -1,0 +1,84 @@
+<?php
+
+/**
+ * @file
+ * This module alters the site information form.
+ *
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter()r.
+ *
+ * @param array $form
+ *   An associative array containing the structure of the form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ */
+function site_api_key_form_system_site_information_settings_alter(&$form, FormStateInterface $form_state, $form_id)
+{
+    $form['site_api_key'] = [
+        '#type' => 'details',
+        '#title' => t('Site Api Key'),
+        '#open' => true,
+    ];
+    $siteSettings = \Drupal::service('keyvalue')->get('application.settings')->getAll();
+    $siteApiKey = !empty($siteSettings['site_api_key']) ? $siteSettings['site_api_key'] : "";
+    if (!empty($siteApiKey)) {
+        $form['actions']['submit']['#value'] = t('Update Configuration');
+    }
+    $form['site_api_key']['site_api_key_text_field'] = [
+        '#type' => 'textfield',
+        '#title' => t('Site Api Key'),
+        '#default_value' => $siteApiKey,
+        '#size' => 40,
+        '#description' => t('Site Api Key'),
+    ];
+    $form['#validate'][] = 'site_api_key_validate';
+    $form['#submit'][] = 'site_api_key_submission';
+}
+
+/**
+ * Form validation handler.
+ *
+ * @param array $form
+ *   An associative array containing the structure of the form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ */
+function site_api_key_validate(&$form, FormStateInterface $form_state)
+{
+    if ($form_state->isValueEmpty('site_api_key_text_field')) {
+        $form_state->setErrorByName('site_api_key_text_field', t("Site Api Key Field Is Required."));
+    }
+    if (!$form_state->isValueEmpty('site_api_key_text_field')) {
+        $storage = \Drupal::entityTypeManager()->getStorage('node');
+        $pageId = $form_state->getValues()['site_api_key_text_field'];
+        $idKey = $storage->getEntityType()->getKey('id');
+        $typeKey = $storage->getEntityType()->getKey('bundle');
+        $properties[$idKey] = $pageId;
+        $properties[$typeKey] = "page";
+        $page = $storage->loadByProperties($properties);
+        if (empty($page)) {
+            $form_state->setErrorByName('site_api_key_text_field', t("Please enter a valid node id of type page."));
+        }
+
+    }
+}
+
+/**
+ * Form submission handler.
+ *
+ * @param array $form
+ *   An associative array containing the structure of the form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ */
+function site_api_key_submission(&$form, FormStateInterface $form_state)
+{
+    $siteApiKey = $form_state->getValues()['site_api_key_text_field'];
+    if (!empty($siteApiKey)) {
+        \Drupal::service('keyvalue')->get('application.settings')->set("site_api_key", $siteApiKey);
+    }
+}
